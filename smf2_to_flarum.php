@@ -26,38 +26,9 @@ $timestamp_start = time();
 ///////////////////////////////////////////////////////////////////////////////
 // GENERAL SETTINGS ***TO BE TAILORED***
 ///////////////////////////////////////////////////////////////////////////////
-<<<<<<< HEAD
 // General settings are in smf2_to_flarum_settings.php
 ///////////////////////////////////////////////////////////////////////////////
 include_once("smf2_to_flarum_settings.php");
-=======
-$servername = "localhost";
-$table_prefix = "smf_";
-
-// SMF DB credentials
-$usrSMF = "";
-$pwdSMF = "";
-$dbSMF  = "";
-
-// Flarum DB credentials
-$usrFlarum = "";
-$pwdFlarum = "";
-$dbFlarum  = "";
-
-// We introduce a sleeping period every 100 posts to limit the load on the server
-$server_interval = 10;
-// For testing only. Here is possible to set a LIMIT SQL statement for a partial export 
-$limit_topics = "";
-
-// Export settings
-$do_users = true;	// Export users?
-$do_tags = true;	// Export boards and sub-boards?
-$do_posts = true;	// Export posts?
-
-// Import settings
-$do_import = true;	// Try a direct import in flarum db?
-$do_dump = true;	// Dump the SQL code to a file?
->>>>>>> 8e3daa66ead37b7261119a5ead994c9f22922471
 
 ///////////////////////////////////////////////////////////////////////////////
 // AUXILIARY FUNCTIONS
@@ -91,7 +62,6 @@ function stripBBCode($text_to_search) {
 
 function convertURL($text)
 {
-<<<<<<< HEAD
 	return preg_replace('/(https?://(\S*?\.\S*?))([\s)\[\]{},;"\':<]|\.\s|$)/is','<URL url="$1">$1</URL>',$text);
 }
 
@@ -100,9 +70,6 @@ function convertURL($text)
 function convertYoutubeURL($text)
 {
 	return preg_replace('/http(?:s?):\/\/(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)([\w\-\_]*)(&(amp;)?‌​[\w\?‌​=]*)?/i','<p><YOUTUBE id="$1" url="$0">$0</YOUTUBE></p>',$text);
-=======
-	return preg_replace('#(https?://(\S*?\.\S*?))([\s)\[\]{},;"\':<]|\.\s|$)#is','<URL url="$1">$1</URL>',$text);
->>>>>>> 8e3daa66ead37b7261119a5ead994c9f22922471
 }
 
 function convertQuoteBBCode($text)
@@ -181,19 +148,12 @@ function convertBBCodeToMarkdown($bbcode)
 // Formats PHPBB's text to Flarum's text format
 function formatText($connection,$text)
 {
-<<<<<<< HEAD
 	global $do_youtube_links;
 	
 	// Do we need rich test wrapTag ("r")?
 	// It is needed for [quote], [url]
 	$wrapTag = "t";
 	if (preg_match('/\[(url|http|quote|img)/i',$text)) $wrapTag = "r";
-=======
-	// Do we need rich test wrapTag ("r")?
-	// It is needed for [quote], [url]
-	$wrapTag = "t";
-	if (preg_match('/\[(url|quote|img)/i',$text)) $wrapTag = "r";
->>>>>>> 8e3daa66ead37b7261119a5ead994c9f22922471
 	 
 	// HTML line breaks to \n
 	$text = preg_replace('/(\<br\>|\<br\/\>|\<br\s\/\>)/', "\n", $text);
@@ -207,16 +167,11 @@ function formatText($connection,$text)
 	// Convert SLF bbcode in Flarum internal Markdown equivalent tags
 	$text = convertBBCodeToMarkdown($text);
 	
-<<<<<<< HEAD
 	// OPTIONAL - Remove Smilies?
 	// $text = preg_replace('#\:\w+#', '', $text);
 	
 	// OPTIONAL - Convert all youtube links to Mediaembed compatible lingo?
 	if ($do_youtube_links) $text = convertYoutubeURL($text);
-=======
-	// Removing Smilies?
-	//$text = preg_replace('#\:\w+#', '', $text);
->>>>>>> 8e3daa66ead37b7261119a5ead994c9f22922471
 	
 	// Wrap text lines with paragraph tags
 	$explodedText = preg_split ('/$\R?^/m', $text);
@@ -276,11 +231,8 @@ if ($do_tags) { echo "BOARDS export ENABLED<br>"; } else { echo "BOARDS export D
 if ($do_posts) { echo "MESSAGES export ENABLED<br>"; } else { echo "MESSAGES export DISABLED<br>"; }
 if ($do_import) { echo "DIRECT IMPORT in flarum ENABLED<br>"; } else { echo "DIRECT IMPORT in flarum DISABLED<br>"; }
 if ($do_dump) { echo "SQL FILE DUMP ENABLED<br>"; } else { echo "SQL FILE DUMP DISABLED<br>"; }
-<<<<<<< HEAD
 if ($do_youtube_links) { echo "YOUTUBE EMBED ENABLED<br>"; } else { echo "YOUTUBE EMBED ENABLED<br>"; }
 if ($do_dump) { echo "IMAGE ATTACHMENTS EXPORT ENABLED<br>"; } else { echo "IMAGE ATTACHMENTS EXPORT DISABLED<br>"; }
-=======
->>>>>>> 8e3daa66ead37b7261119a5ead994c9f22922471
 
 ///////////////////////////////////////////////////////////////////////////////
 // 1) USERS
