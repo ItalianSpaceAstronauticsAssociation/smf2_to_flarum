@@ -3,10 +3,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 // GENERAL SETTINGS ***TO BE TAILORED***
 ///////////////////////////////////////////////////////////////////////////////
-$servername = "localhost";
-$table_prefix = "smf_";
+$servername = "localhost";	// Server name for both SMF and Flarum DB.
 
 // SMF DB credentials
+$table_prefix = "smf_";	// Table prefix is at the moment only valid for SMF DB.
 $usrSMF = "";
 $pwdSMF = "";
 $dbSMF  = "";
