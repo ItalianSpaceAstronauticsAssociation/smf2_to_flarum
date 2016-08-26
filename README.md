@@ -1,4 +1,4 @@
-# smf2_to_flarum
+	# smf2_to_flarum
 Migration Script from SMF version 2 to Flarum, partially based on the phpbb_to_flarum script by robrotheram, VIRUXE, Reflic
 // https://github.com/robrotheram/phpbb_to_flarum
 
@@ -12,8 +12,8 @@ At the moment the script copies:
 - Topics and messages (with bbcode to flarum markup translation)
 
 TBD
-- Aliases
-- Attachments (only images supported by flarum, via extension)
+- User avatars
+- SMF Attachments (only image attachments are currently supported by flarum, via extension)
 - Private Messages (not yet supported by flarum)
 
 ##Install
