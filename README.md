@@ -29,8 +29,8 @@ At this moment smf2_to_flarum only supports migration of:
 
 ## Installation
 * Install a vanilla Flarum, with empty database.
-* Copy smf2_to_flarum.php file in your SMF forum root.
-* Customise smf2_to_flarum.php script settings with the correct username/password for your SMF2 and (optionally) Flarum DB, then enable/disable the export settings (all enabled by default).
+* Copy smf2_to_flarum.php and smf2_to_flarum_settings.php in your SMF forum root.
+* Customise smf2_to_flarum_settings.php script settings with the correct username/password for your SMF2 and (optionally) Flarum DB, and enable/disable the export settings (all enabled by default).
 * Run the script as http://www.yoursmf2website.xyz/smf2_to_flarum.php
 
 The script provides plenty of reporting about the on-going activities.
