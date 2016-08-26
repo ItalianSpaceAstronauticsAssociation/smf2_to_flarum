@@ -153,7 +153,7 @@ function formatText($connection,$text)
 	// Do we need rich test wrapTag ("r")?
 	// It is needed for [quote], [url]
 	$wrapTag = "t";
-	if (preg_match('/\[(url|http|quote|img)/i',$text)) $wrapTag = "r";
+	if (preg_match('/\[(url|http|quote|img|youtu)/i',$text)) $wrapTag = "r";
 	 
 	// HTML line breaks to \n
 	$text = preg_replace('/(\<br\>|\<br\/\>|\<br\s\/\>)/', "\n", $text);
