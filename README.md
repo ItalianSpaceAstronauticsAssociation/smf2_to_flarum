@@ -15,9 +15,10 @@ At this moment smf2_to_flarum only supports migration of:
 - Topics and messages (with some bbcode to flarum-markdown translation)
 
 ##Known issues / Future features
-- Users' avatars are not exported at the moment.
+- Users' avatars are not exported.
 - SMF/SMF2 Attachments are not exported. While SMF supports all kind of attachments, Flarum only allows image attachments and provided that flagrow-image-upload extension has been installed (see https://discuss.flarum.org/d/1836-flagrow-image-uploader-for-flarum-forum-messages)
 - Private Messages are not exported yet, since this feature is not yet supported by Flarum. 
+- Smilies are not "translated".
 
 ##Installation
 * Install a vanilla Flarum, with empty database.
