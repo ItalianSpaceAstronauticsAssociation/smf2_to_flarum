@@ -585,7 +585,7 @@ if ($do_posts)
 			// Single entries in post table now...
 			$query = "INSERT INTO `posts` (`id`,`discussion_id`,`number`,`time`,`user_id`,`type`,`content`,`edit_time`,`edit_user_id`,`hide_time`,`hide_user_id`,`ip_address`,`is_approved`
 				) VALUES (
-				'".$message["id_msg"]."','".$message["id_topic"]."','".$post_counter."','".$message["poster_time"]."','".$message["id_member"]."','comment','".newFormatText($exportDbConnection,$body)."',DEFAULT,DEFAULT,DEFAULT,DEFAULT,'".$message["poster_ip"]."',1);";
+				'".$message["id_msg"]."','".$message["id_topic"]."','".$post_counter."','".$message["poster_time"]."','".$message["id_member"]."','comment','".formatText($exportDbConnection,$body)."',DEFAULT,DEFAULT,DEFAULT,DEFAULT,'".$message["poster_ip"]."',1);";
 			if ($do_dump) $testW = fwrite($fileHandler,$query.PHP_EOL);
 			if ($do_import)
 			{
