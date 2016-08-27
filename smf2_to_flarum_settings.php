@@ -31,7 +31,15 @@ $do_import = true;	// Try a direct import in flarum db?
 $do_dump = true;	// Dump the SQL code to a file?
 
 // Exports requiring non-bundled Extensions
+$do_attachments_avatars = true;	// Export users' avatars?
 $do_attachments_images = false;	// Requires flarum-image-upload ext.
 $do_youtube_links = false; 		// Requires Mediaembed ext.
+
+
+// Attachment folder(s)
+$attachments_dir = array(
+	"0" => "/your_full_path_to_smf2/attachments"
+);
+
 
 ?>

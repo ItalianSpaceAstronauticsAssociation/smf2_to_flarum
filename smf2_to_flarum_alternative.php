@@ -9,6 +9,12 @@
 <?php
 ///////////////////////////////////////////////////////////////////////////////
 // SMF2 to FLARUM migration script
+//
+// s9e\TextFormatter version
+//
+// This version performes a migration from SMF2 to Flarum using the 
+// TextFormatter parser from s9e\TextFormatter version by PHP
+//
 // (C) Marco Zambianchi - ISAA Technical Team (http://www.isaa.it)
 // This file is shared under a Creative Commons "BY" license.
 //
@@ -17,6 +23,11 @@
 //
 // License: MIT
 ///////////////////////////////////////////////////////////////////////////////
+
+// Get the autoloader (unless you have already loaded Composer's)
+include __DIR__ . '/vendor/autoload.php';
+
+use s9e\TextFormatter\Bundles\Forum as TextFormatter;
 
 set_time_limit(60*60*24); // 1 day
 error_reporting(E_ALL);
@@ -60,101 +71,13 @@ function stripBBCode($text_to_search) {
 	return preg_replace($pattern, $replace, $text_to_search);
 }
 
-function convertURL($text)
+// We convert messages bodies into Flarum-compatible XML format
+function newFormatText($connection,$text)
 {
-	return preg_replace('/(https?://(\S*?\.\S*?))([\s)\[\]{},;"\':<]|\.\s|$)/is','<URL url="$1">$1</URL>',$text);
-}
-
-// This feature requires extension Mediaembed 
-// see (https://discuss.flarum.org/d/647-s9e-mediaembed-embed-videos-and-third-party-content)
-function convertYoutubeURL($text)
-{
-	return preg_replace('/http(?:s?):\/\/(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)([\w\-\_]*)(&(amp;)?‌​[\w\?‌​=]*)?/i','<p><YOUTUBE id="$1" url="$0">$0</YOUTUBE></p>',$text);
-}
-
-function convertQuoteBBCode($text)
-{
-	// Setting up things for catching the opening quote bbcode...
-	$r_open = " XXXSTARTQUOTEYYY ";
-	// We have to support some different options
-	$regexp = '/(\[quote]|(\[quote(=|\w|")+\])|(\[quote author(=|\w|")+\])|(\[quote author(=|\w|")+\slink(=|\w|"|#|\.)+\sdate(=|\d)+\]))/i';
-
-	// Replacing the start quote
-	$text = preg_replace($regexp,$r_open,$text);
-	// Replacing the end quote
-	$text = preg_replace('/\[\/quote]/i',"</p></QUOTE><NEWLINE>",$text);
-
-	// splitting up words with spaces (We want to keep newlines)
-	$words = preg_split('/ /',$text);
-
-	// We now navigate the words' array and replace the quote start string
-	// applying the proper indentation level (&gt;)
-	$level = 0;
-	for ($idx=0; $idx<count($words); $idx++)
-	{
-		$w = $words[$idx];
-		
-		// Have we met an opening quote? Then we deal with it.
-		// We make sure to apply the proper level indentation.
-		$test = strpos(trim($w),trim($r_open));
-		if ($test !== false)
-		{
-			$level++;
-			$replacement = "<QUOTE><i>" . str_repeat('&gt;',$level) . " </i><p>";
-			$words[$idx] = preg_replace('/('.trim($r_open).')+/s',$replacement,$w);
-		}
-		
-		// Have we met a closing quote tag? 
-		// Then we decrease the indentation level.
-		$test = strpos($w,"</QUOTE>");
-		if ($test !== false) $level--;
-	}
-
-	// Now that the "translation" is done, we merge everything together again...
-	$text = implode(" ",$words);
-	//$text = "<p>".preg_replace('/<NEWLINE>/i',"\n",$text)."</p>";
-	$text = preg_replace('/<NEWLINE>/i',"\n",$text);
-	return $text;
-}
-
-// Converts BBCODE to Flarum-compatible Markdown internal format
-function convertBBCodeToMarkdown($bbcode)
-{
-	$bbcode = preg_replace('/\[b](.+)\[\/b]/i', "<STRONG><s>**</s>$1<e>**</e></STRONG>", $bbcode);
-	$bbcode = preg_replace('/\[i](.+)\[\/i]/i', "<EM><s>*</s>$1<EM><e>*</e></EM>", $bbcode);
 	
+	// We get rid of [html] bbcode
+	$text = preg_replace('/(\[html]|\[\/html])/si', '', $text);
 	
-	if (!preg_match('/\[url=(.+?)]\s?\[img/',$bbcode))
-	{
-		$bbcode = preg_replace('/(\[img]|\[img width(=|\d|")+\])(.+?)\[\/img]/i', '<IMG alt="" src="$3"><s>![</s><e>]($3)</e></IMG>', $bbcode);	
-		$bbcode = preg_replace('/\[url=(.+?)](.+?)\[\/url]/i','<URL url="$1">$2</URL>', $bbcode);
-		$bbcode = preg_replace('/\[url](.+?)\[\/url]/i','<URL url="$1">$1</URL>', $bbcode); 
-	} else {
-		$bbcode = preg_replace('/(\[img]|\[img width(=|\d|")+\])(.+?)\[\/img]/i', '<IMG alt="" src="$3"><s>![</s><e>]($3)</e></IMG>', $bbcode);	
-	}
-	
-	$bbcode = preg_replace('/\[center](.+?)\[\/center]/i', '$1', $bbcode);
-	$bbcode = preg_replace('/\[color.+?](.+?)\[\/color]/i', '$1', $bbcode);
-	$bbcode = preg_replace('/\[size.+?](.+?)\[\/size]/i', '$1', $bbcode);
-	
-	$bbcode = convertQuoteBBCode($bbcode);
-	
-	// Delete all non converted bbcode
-	$bbcode = preg_replace('|[[\/\!]*?[^\[\]]*?]|si', '', $bbcode);
-	
-	return $bbcode;
-}
-
-// Formats PHPBB's text to Flarum's text format
-function formatText($connection,$text)
-{
-	global $do_youtube_links;
-	
-	// Do we need rich test wrapTag ("r")?
-	// It is needed for [quote], [url]
-	$wrapTag = "t";
-	if (preg_match('/\[(url|http|quote|img|youtu)/i',$text)) $wrapTag = "r";
-	 
 	// HTML line breaks to \n
 	$text = preg_replace('/(<br\s?\/?>)+/is', "\n", $text);
 	
@@ -167,26 +90,11 @@ function formatText($connection,$text)
 	// Force encoding conversion to UTF-8
 	$text = html_entity_decode($text,ENT_COMPAT|ENT_HTML401,'UTF-8');
 	
-	// Convert SLF bbcode in Flarum internal Markdown equivalent tags
-	$text = convertBBCodeToMarkdown($text);
+	// 
+	$text = TextFormatter::parse($text);
 	
-	// OPTIONAL - Remove Smilies?
-	// $text = preg_replace('#\:\w+#', '', $text);
-	
-	// OPTIONAL - Convert all youtube links to Mediaembed compatible lingo?
-	if ($do_youtube_links) $text = convertYoutubeURL($text);
-	
-	// Wrap text lines with paragraph tags
-	$explodedText = preg_split ('/$\R?^/m', $text);
-	foreach ($explodedText as $key => $value)
-	{
-		if(strlen(trim($value)) >= 1)// Only wrap in a paragraph tag if the line has actual text
-			$explodedText[$key] = '<p>' . trim($value) . '</p>';
-	}
-	$text = implode("\n", $explodedText);
-	
-	// We wrap the text just before returning
-	$text = sprintf('<%s>%s</%s>', $wrapTag, $text, $wrapTag);
+	// Delete all non converted bbcode
+	$text = preg_replace('/[[\/\!]*?[^\[\]]*?]/si', '', $text);
 	
 	return $connection->real_escape_string($text);
 }
@@ -353,8 +261,6 @@ if ($do_users)
 					$auxQuery = $importDbConnection->query($query);
 					if (!$auxQuery) echo $importDbConnection->error . "<br>";
 				}
-				//echo "$query<br>";
-				//echo "<br>";
 				
 				// We create the users_groups table entries, adding all new users to "members" group
 				$query = "INSERT INTO `users_groups` (`user_id`, `group_id`) VALUES ('$id', '3');";
@@ -364,8 +270,6 @@ if ($do_users)
 					$auxQuery = $importDbConnection->query($query);
 					if (!$auxQuery) echo $importDbConnection->error . "<br>";
 				}
-				//echo "$query<br>";
-				//echo "<br>";
 			}
 			else {
 				$usersIgnored++;
@@ -569,8 +473,6 @@ if ($do_posts)
 					$auxQuery = $importDbConnection->query($query);
 					if (!$auxQuery) echo $importDbConnection->error . "<br>";
 				}
-				//echo "$query<br>";
-				//echo "<br>";
 			}
 			
 			// posts table population 
@@ -590,9 +492,7 @@ if ($do_posts)
 				$auxQuery = $importDbConnection->query($query);
 				if (!$auxQuery) echo $importDbConnection->error . "<br>";
 			}
-			//echo "$query<br>";
-			//echo "<br>";
-			
+
 			// We add a record to users_discussions too
 			$query = "INSERT IGNORE INTO `users_discussions` (`user_id`,`discussion_id`) VALUES ('".$message["id_member"]."','".$message["id_topic"]."');";
 			if ($do_dump) $testW = fwrite($fileHandler,$query.PHP_EOL);
@@ -601,9 +501,7 @@ if ($do_posts)
 				$auxQuery = $importDbConnection->query($query);
 				if (!$auxQuery) echo $importDbConnection->error . "<br>";
 			}
-			//echo "$query<br>";
-			//echo "<br>";
-			
+
 			// We update discussion_count in table users
 			$query = "UPDATE users SET comments_count=comments_count+1 WHERE id='".$message["id_member"]."';";
 			if ($do_dump) $testW = fwrite($fileHandler,$query.PHP_EOL);
@@ -612,13 +510,11 @@ if ($do_posts)
 				$auxQuery = $importDbConnection->query($query);
 				if (!$auxQuery) echo $importDbConnection->error . "<br>";
 			}
-			//echo "$query<br>";
-			//echo "<br>";
-				
+			
 			$post_counter++;
 			$converted++;
 			
-			// Every 100 converted posts, we sleep a few seconds
+			// Every 100 converted posts, we sleep a few seconds 5 seconds
 			if (($converted % 100) == 0)
 			{
 				echo "Converted $converted of $totalPosts messages<br>";
