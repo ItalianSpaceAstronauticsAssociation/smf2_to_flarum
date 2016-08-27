@@ -14,7 +14,7 @@ These two functionalities can be performed together or as alternatives.
 
 Flarum is still in beta testing, therefore only some of the typical web forum features are available.
 At this moment smf2_to_flarum only supports migration of:
-- Users (no passwords - ask for a new one, no avatars)
+- Users (no passwords - ask for a new one)
 - Boards and sub boards (categories are intentionally ignored, boards deeper than 2nd level are added in Flarum as extra Tags)
 - Topics and messages (with some bbcode to flarum-markdown translation)
 
