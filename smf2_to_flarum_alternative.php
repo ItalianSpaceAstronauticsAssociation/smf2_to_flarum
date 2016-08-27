@@ -210,7 +210,9 @@ if ($do_users)
 			$testW = fwrite($fileHandler,"TRUNCATE users;".PHP_EOL);
 			$testW = fwrite($fileHandler,"TRUNCATE users_groups;".PHP_EOL);
 		}
-		
+	
+		// if avatars dir doesn't exists we create it
+		if (!file_exists(__DIR__ . '/avatars')) mkdir(__DIR__ . '/avatars');
 				
 		echo "Found $totalUsers users to export<br>";
 		$i = 0;
