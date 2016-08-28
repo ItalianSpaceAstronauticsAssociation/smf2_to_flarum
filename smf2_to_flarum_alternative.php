@@ -601,7 +601,7 @@ if ($do_attachments_images)
 			$dst = __DIR__.'/images/' . $row['id_member'] . "_" . md5($filename) . '.' . $row['fileext'];
 			
 			$attachment = basename($dst);
-			$attachment_url = "http://astronautica.community/flarum/assets/images/$attachment";
+			$attachment_url = $flarum_website_url."/assets/images/$attachment";
 			
 			// We make sure we have a unique filename
 			// while (file_exists($dst)) $dst = __DIR__.'/images/' . generateRandomString() . '.' . $row['fileext'];

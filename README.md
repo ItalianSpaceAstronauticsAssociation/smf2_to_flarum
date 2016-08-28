@@ -6,17 +6,18 @@ You find the script on GitHub
 https://github.com/ItalianSpaceAstronauticsAssociation/smf2_to_flarum
 
 ## Description
-The Script exports and migrates your SMF2 forum to Flarum. It supports:
+The Script exports and migrates your SMF2 (possibly SMF1.x) forum to Flarum. It supports:
 - a DB to DB migration,
 - a DB to ASCII SQL file export.
 
 These two functionalities can be performed together or as alternatives.
 
-Flarum is still in beta testing, therefore only some of the typical web forum features are available.
+Flarum is still in beta testing, therefore only some of the typical web forum features are available, and what is now working can break anytime (including this script, tailored for flarum ver. 0.1.0-beta.5).
 At this moment smf2_to_flarum only supports migration of:
-- Users (no passwords - ask for a new one)
-- Boards and sub boards (categories are intentionally ignored, boards deeper than 2nd level are added in Flarum as extra Tags)
+- Users and their avatars (no passwords are exported. Migrated users will have to ask for a new one).
+- Boards and sub boards (Categories are intentionally ignored, and boards deeper than 2nd level are added in Flarum as extra Tags)
 - Topics and messages (with some bbcode to flarum-markdown translation)
+- Attachments (partial, only images)
 
 ## Changelog
 - 2016-08-28: Version 0.3 Alpha
@@ -52,7 +53,10 @@ From there the avatars shall be manually copied into flarum "assets/avatars" dir
 
 ## Attachments
 Attachment management is not part of flarum core. In order to have attachments functionality in flarum the "Image Upload" extension has to be installed and enabled (see https://discuss.flarum.org/d/1836-flagrow-image-uploader-for-flarum-forum-messages).
-The migration script exports only *image* attachments, since no other attachment type is supported by the extension at the moment. Files are extracted from single or multiple directory attachment system of SMF/SMF2 then stored in a directory named "images". From this directory the attachments shall be manually copied in "assets/images" directory of your flarum installation.
+
+The migration script exports only *image* attachments, since no other attachment type is supported at the moment. Files are extracted from single or multiple directory attachment system of SMF/SMF2 then stored in a directory named "images". 
+
+From this directory the attachments shall be manually copied in "assets/images" directory of your flarum installation.
 
 ## Help us
 Feel free to contribute to this project!
