@@ -532,6 +532,140 @@ if ($do_posts)
 		echo "Topic/Messages export error.";
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// 4) ATTACHMENTS (IMAGES)
+///////////////////////////////////////////////////////////////////////////////
+if ($do_attachments_images)
+{
+	echo "<H2>4) SMF ATTACHMENTS, IMAGES ONLY</H2>";
+
+	$result = $exportDbConnection->query("
+		SELECT 
+			".$table_prefix."messages.id_member,
+			from_unixtime(".$table_prefix."messages.poster_time) as poster_time,
+			".$table_prefix."attachments.id_attach,
+			".$table_prefix."attachments.id_msg,
+			".$table_prefix."attachments.filename, 
+			".$table_prefix."attachments.fileext, 
+			".$table_prefix."attachments.file_hash, 
+			".$table_prefix."attachments.size, 			
+			".$table_prefix."attachments.id_folder
+		FROM ".$table_prefix."attachments 
+		INNER JOIN ".$table_prefix."messages
+		ON ".$table_prefix."attachments.id_msg=".$table_prefix."messages.id_msg 
+		WHERE 
+			".$table_prefix."attachments.attachment_type = 0
+		AND
+			(".$table_prefix."attachments.mime_type LIKE 'image%' 
+			OR ".$table_prefix."attachments.fileext='jpeg'
+			OR ".$table_prefix."attachments.fileext='jpg'
+			OR ".$table_prefix."attachments.fileext='bmp'
+			OR ".$table_prefix."attachments.fileext='gif')
+		ORDER BY id_attach DESC
+		"
+		);
+	if (!$result) echo $exportDbConnection->error;
+	$totalAttachments = $result->num_rows;
+
+	if ($result)
+	{
+		if ($do_import)
+		{
+			$auxQuery = $importDbConnection->query("TRUNCATE flagrow_images;");
+		}
+		
+		if ($do_dump)
+		{
+			$testW = fwrite($fileHandler,"TRUNCATE flagrow_images;".PHP_EOL);
+		}
+		
+		// if images dir doesn't exists we create it
+		if (!file_exists(__DIR__ . '/images')) mkdir(__DIR__ . '/images');
+				
+		echo "Found $totalAttachments attachments to export<br>";
+		
+		$i = 0;
+		while($row = $result->fetch_assoc())
+		{	
+			// We need to know whether the attachment has been saved with SMF1.x or SMF2.x
+			// The newer ones have file_hash
+			if (trim($row['file_hash']) == "")
+			{
+				$filename = getLegacyAttachmentFilename($row['filename'],$row['id_attach']);
+			} else {
+				$filename = $row['id_attach'] . "_" . $row['file_hash'];
+			}
+			$idx_src_dir = $row['id_folder'];
+			$src_dir = $attachments_dir[$idx_src_dir];
+			$src = $src_dir . '/' . $filename;
+			$dst = __DIR__.'/images/' . $row['id_member'] . "_" . md5($filename) . '.' . $row['fileext'];
+			
+			$attachment = basename($dst);
+			$attachment_url = "http://astronautica.community/flarum/assets/images/$attachment";
+			
+			// We make sure we have a unique filename
+			// while (file_exists($dst)) $dst = __DIR__.'/images/' . generateRandomString() . '.' . $row['fileext'];
+				
+			// We try to copy the attachment file in images directory
+			$val = @copy($src,$dst);
+			if (!$val) continue;
+			
+			$i++;
+			echo sprintf("%06d) id_attach:%06d id_msg:%06d id_member:%06d filename:%s\n<br>",$i,$row['id_attach'],$row['id_msg'],$row['id_member'],$row['filename']);
+
+			// We create the flagrow_images table entries
+			$query = "INSERT INTO `flagrow_images` 
+			(`user_id`, `file_name`, `upload_method`, `created_at`, `file_url`, `file_size`) VALUES ('".$row['id_member']."', '".basename($dst)."', 'local', '".$row['poster_time']."', '".$attachment_url."', '".$row['size']."');";
+			if ($do_dump) $testW = fwrite($fileHandler,$query.PHP_EOL);
+			if ($do_import)
+			{
+				$auxQuery = $importDbConnection->query($query);
+				if (!$auxQuery) echo $importDbConnection->error . "<br>";
+			}
+			echo "$query<br>";
+			
+			// We prepare the attachment link and we place it at the end of the message body
+			$text = '<p><IMG alt="image '.$attachment_url.'" src="'.$attachment_url.'"><s>![</s>image '.$attachment_url.'<e>]('.$attachment_url.')</e></IMG></p></r>';
+			
+			// We make sure all <t> type posts are re-defined as <r>
+			$query = "UPDATE `posts` SET content=REPLACE(content, '<t>', '<r>') WHERE id='".$row['id_msg']."';";
+			if ($do_dump) $testW = fwrite($fileHandler,$query.PHP_EOL);
+			if ($do_import)
+			{
+				$auxQuery = $importDbConnection->query($query);
+				if (!$auxQuery) echo $importDbConnection->error . "<br>";
+			}
+			
+			// We make sure all </t> type posts are re-defined as </r>
+			$query = "UPDATE `posts` SET content=REPLACE(content,'".$exportDbConnection->real_escape_string("</t>")."','".$exportDbConnection->real_escape_string("</r>")."') WHERE id='".$row['id_msg']."';";
+			if ($do_dump) $testW = fwrite($fileHandler,$query.PHP_EOL);
+			if ($do_import)
+			{
+				$auxQuery = $importDbConnection->query($query);
+				if (!$auxQuery) echo $importDbConnection->error . "<br>";
+			}
+			
+			// Finally we swap the last </r> in the content with the proper XML for the attachment.
+			$query = "UPDATE `posts` SET content=REPLACE(content,'".$exportDbConnection->real_escape_string("</r>")."','".$exportDbConnection->real_escape_string($text)."') WHERE id = '".$row['id_msg']."';";
+			if ($do_dump) $testW = fwrite($fileHandler,$query.PHP_EOL);
+			if ($do_import)
+			{
+				$auxQuery = $importDbConnection->query($query);
+				if (!$auxQuery) echo $importDbConnection->error . "<br>";
+			}
+			
+			echo "<hr>";
+				
+		}
+		$result->free_result();
+		echo "$i attachments of $totalAttachments exported<br>";
+	}
+	else
+		echo "Users export error.";
+		
+	echo "<hr>";
+}
+
 //Clean-up
 
 $exportDbConnection->close();
