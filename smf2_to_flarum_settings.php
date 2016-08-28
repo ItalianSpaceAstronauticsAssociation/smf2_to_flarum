@@ -4,7 +4,7 @@
 // GENERAL SETTINGS ***TO BE TAILORED***
 ///////////////////////////////////////////////////////////////////////////////
 $servername = "localhost";	// Server name for both SMF and Flarum DB.
-$attachment_url = "http://www.yourflarumwebsite.xyz";	// Change this fake URL with your flarum website...
+$flarum_website_url = "http://www.yourflarumwebsite.xyz";	// Change this fake URL with your flarum website...
 
 // SMF DB credentials
 $table_prefix = "smf_";	// Table prefix is at the moment only valid for SMF DB.

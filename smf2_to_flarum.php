@@ -62,7 +62,7 @@ function stripBBCode($text_to_search) {
 
 function convertURL($text)
 {
-	return preg_replace('/(https?://(\S*?\.\S*?))([\s)\[\]{},;"\':<]|\.\s|$)/is','<URL url="$1">$1</URL>',$text);
+	return preg_replace('/(https?:\/\/(\S*?\.\S*?))([\s)\[\]{},;"\':<]|\.\s|$)/is','<URL url="$1">$1</URL>',$text);
 }
 
 // This feature requires extension Mediaembed 
@@ -123,7 +123,10 @@ function convertBBCodeToMarkdown($bbcode)
 	$bbcode = preg_replace('/\[b](.+)\[\/b]/i', "<STRONG><s>**</s>$1<e>**</e></STRONG>", $bbcode);
 	$bbcode = preg_replace('/\[i](.+)\[\/i]/i', "<EM><s>*</s>$1<EM><e>*</e></EM>", $bbcode);
 	
+	// "Lonely" url? We convert
+	if (!preg_match('/(\[url|\[img)/',$bbcode)) $bbcode = convertURL($bbcode);
 	
+	// Nested images as urls? We convert only img, otherwise img and urls
 	if (!preg_match('/\[url=(.+?)]\s?\[img/',$bbcode))
 	{
 		$bbcode = preg_replace('/(\[img]|\[img width(=|\d|")+\])(.+?)\[\/img]/i', '<IMG alt="" src="$3"><s>![</s><e>]($3)</e></IMG>', $bbcode);	
