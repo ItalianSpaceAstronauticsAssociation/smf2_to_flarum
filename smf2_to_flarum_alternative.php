@@ -74,9 +74,17 @@ function stripBBCode($text_to_search) {
 // We convert messages bodies into Flarum-compatible XML format
 function newFormatText($connection,$text)
 {
-	
-	// We get rid of [html] bbcode
-	$text = preg_replace('/(\[html]|\[\/html])/si', '', $text);
+		
+	// We get rid of [html] bbcode, saving part of its content.
+	if (preg_match('/\[html]/si',$text))
+	{
+		$text = preg_replace('/\[html]/si', '', $text);
+		$text = preg_replace('/\[\/html]/si', '', $text);
+		$text = strip_tags($text,"<img>");
+		preg_match_all('#src="?(https?:\/\/(\S*?\.\S*?))([\s)\[\]{},;"\':<]|\.\s|$)"?#is',$text,$matches);
+		$text = strip_tags($text);
+		$text = "[img]".$matches[1][0]."[/img]\n".$text;
+	} 
 	
 	// HTML line breaks to \n
 	$text = preg_replace('/(<br\s?\/?>)+/is', "\n", $text);
